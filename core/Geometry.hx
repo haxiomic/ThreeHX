@@ -1,4 +1,3 @@
-
 package three.core;
 
 import three.math.Box3;
@@ -14,9 +13,8 @@ import three.math.Vector3;
  * @author dcm
  */
 
-class Geometry
+class Geometry extends BaseGeometry
 {
-	public var id:Int;
 	public var name:String;
 	public var vertices:Array<Vector3>;
 	public var colors:Array<Color>;
@@ -27,7 +25,6 @@ class Geometry
 	public var faceVertexUvs:Array<Dynamic>;
 	
 	//not yet
-	public var morphTargets:Array<Vector3>;
 	public var morphColors:Array<Color>;
 	public var morphNormals:Array<Vector3>;
 	public var skinWeights:Array<Dynamic>;
@@ -35,26 +32,66 @@ class Geometry
 	
 	public var lineDistances:Array<Dynamic>;
 	
+	public var hasTangents:Bool;
+	public var isDynamic:Bool;
+
 	public var boundingBox:Box3;
 	public var boundingSphere:Sphere;
-	
-	public var hasTangents:Bool;
-	
-	public var isDynamic:Bool;
+
 	public var verticesNeedUpdate:Bool;
-	public var elementsNeedUpdate:Bool;
-	public var uvsNeedUpdate:Bool;
 	public var normalsNeedUpdate:Bool;
 	public var tangentsNeedUpdate:Bool;
+
+	public var morphTargets:Array<Vector3>;
+
+	//Needs updates
+	public var morphTargetsNeedUpdate:Bool;
+	public var elementsNeedUpdate:Bool;
+	public var uvsNeedUpdate:Bool;
 	public var colorsNeedUpdate:Bool;
 	public var lineDistancesNeedUpdate:Bool;
 	public var buffersNeedUpdate:Bool;
 
+
 	//Cache for .computeVertexNormals
 	private var __tmpVertices:Array<Vector3>;
 
+	//Renderers
+	@:allow(three.renderers) private var geometryGroups:Map<Dynamic, Dynamic>;
+
+	@:allow(three.renderers) private var __gpuInit:Bool = false;
+	@:allow(three.renderers) private var __gpuVertexBuffer:#if !flash openfl.gl.GLBuffer #else flash.display3D.VertexBuffer3D #end;
+	@:allow(three.renderers) private var __gpuVertexCount:Int;
+	
+	/*
+	--- Not yet typed --- 
+	@:allow(three.renderers) private var __colorArray
+	@:allow(three.renderers) private var __lineDistanceArray
+	@:allow(three.renderers) private var __normalArray
+	@:allow(three.renderers) private var __gpuColorBuffer
+	@:allow(three.renderers) private var __gpuCustomAttributesList
+	@:allow(three.renderers) private var __gpuFaceBuffer
+	@:allow(three.renderers) private var __gpuLineBuffer
+	@:allow(three.renderers) private var __gpuLineCount
+	@:allow(three.renderers) private var __gpuLineDistanceBuffer
+	@:allow(three.renderers) private var __gpuNormalBuffer
+	@:allow(three.renderers) private var __gpuParticleCount
+	@:allow(three.renderers) private var __gpuSkinIndicesBuffer
+	@:allow(three.renderers) private var __gpuSkinWeightsBuffer
+	@:allow(three.renderers) private var __gpuTangentBuffer
+	@:allow(three.renderers) private var __gpuUV2Buffer
+	@:allow(three.renderers) private var __gpuUVBuffer
+	@:allow(three.renderers) private var __sortArray
+	@:allow(three.renderers) private var __vertexArray
+	@:allow(three.renderers) private var attributes
+	@:allow(three.renderers) private var geometryGroupsList
+	@:allow(three.renderers) private var offsets
+	*/
+
 	public function new() 
 	{
+		super();
+		
 		vertices = new Array<Vector3>();
 		colors = new Array<Color>();
 		normals = new Array<Vector3>();
@@ -63,19 +100,21 @@ class Geometry
 		faceVertexUvs = new Array<Dynamic>();
 		faceVertexUvs.push(new Array<Vector2>());
 		
-		morphTargets = new Array<Vector3>();
 		morphColors = new Array<Color>();
 		morphNormals = new Array<Vector3>();
 		skinWeights = new Array<Dynamic>();
 		skinIndices = new Array<Dynamic>();
 		lineDistances = new Array<Dynamic>();
-		
+
+		morphTargets = new Array<Vector3>();
+
 		boundingBox = new Box3();
 		boundingSphere = new Sphere();
 		
 		hasTangents = false;
 		isDynamic = true;
 		verticesNeedUpdate = false;
+		morphTargetsNeedUpdate = false;
 		elementsNeedUpdate = false;
 		uvsNeedUpdate = false;
 		normalsNeedUpdate = false;
@@ -497,12 +536,5 @@ class Geometry
 		*/
 		
 		return geometry;
-	}
-	
-	
-	public function dispose ()
-	{
-	}
-	
-	
+	}	
 }

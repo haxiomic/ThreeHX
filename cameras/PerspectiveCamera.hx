@@ -16,12 +16,12 @@ class PerspectiveCamera extends Camera
 	public var near:Float;
 	public var far:Float;
 	
-	public var fullWidth:Float = null;
-	public var fullHeight:Float = null;
-	public var x:Float = null;
-	public var y:Float = null;
-	public var width:Float = null;
-	public var height:Float = null;
+	public var fullWidth:Float = 0;
+	public var fullHeight:Float = 0;
+	public var x:Float = 0;
+	public var y:Float = 0;
+	public var width:Float = 0;
+	public var height:Float = 0;
 	
 	
 	public function new(fov:Float = 50, aspect:Float = 1, near:Float = 0.1, far:Float = 2000) 
@@ -56,7 +56,7 @@ class PerspectiveCamera extends Camera
 	
 	public function updateProjectionMatrix ()
 	{
-		if (fullWidth != null)
+		if (fullWidth != 0 && fullHeight != 0 && width != 0 && height != 0)
 		{
 			var aspectRatio = fullWidth / fullHeight;
 			var top = Math.tan(MathUtils.degToRad(fov * 0.5)) * near;

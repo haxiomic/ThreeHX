@@ -70,7 +70,7 @@ class Frustum
 		return this;
 	}
 	
-	
+	//#! needs assement
 	public function intersectsObject (object:Object3D) : Bool
 	{
 		//safe to take a mesh as input only?

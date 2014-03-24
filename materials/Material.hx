@@ -10,8 +10,9 @@ import three.THREE;
  * @author dcm
  */
 
-class Material
+class Material extends BaseMaterial
 {
+
 	public var id:Int;
 	public var name:String;
 	public var side:Int;
@@ -46,9 +47,14 @@ class Material
 	public var visible:Bool = true;
 	public var needsUpdate:Bool = true;
 
+	//Rendering
+	
+
 	
 	public function new() 
 	{
+		super();
+		
 		side = THREE.FrontSide;
 		blending = THREE.NormalBlending;
 		blendSrc = THREE.SrcAlphaFactor;

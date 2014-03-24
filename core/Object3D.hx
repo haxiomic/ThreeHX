@@ -1,9 +1,8 @@
 
 package three.core;
 
-import haxe.Json;
-import js.Lib;
 import three.extras.Utils;
+import three.math.Matrix3;
 import three.math.Matrix4;
 import three.math.Quaternion;
 import three.math.Vector3;
@@ -19,7 +18,8 @@ import three.THREE;
 class Object3D
 {
 	
-	public var type:Int; //constant to avoid type-checking all the time
+	//constant to avoid type-checking all the time
+	public var type(default, null):Int;
 	
 	public var id:Int;
 	public var name:String;
@@ -32,7 +32,7 @@ class Object3D
 	public var eulerOrder:String;
 	public var scale:Vector3;
 	
-	public var renderDepth:Dynamic;
+	public var renderDepth:Null<Float>;
 	
 	public var rotationAutoUpdate:Bool;
 	
@@ -53,9 +53,17 @@ class Object3D
 	public var receiveShadow:Bool;
 	public var target:Object3D;
 
+	//Render fields
+	@:allow(three.renderers) private var modelViewMatrix:Matrix4;
+	@:allow(three.renderers) private var normalMatrix:Matrix3;
+	
+	@:allow(three.renderers) private var __gpuInit:Bool = false;
+	@:allow(three.renderers) private var __gpuActive:Bool = false;
 	
 	public function new() 
 	{
+		type = Reflect.field(Main, Type.getClassName(Type.getClass(this)));
+
 		id = 0;
 		name = '';
 		parent = null;
@@ -66,7 +74,7 @@ class Object3D
 		eulerOrder = THREE.defaultEulerOrder;
 		scale = new Vector3(1, 1, 1);
 		
-		renderDepth = null;
+		renderDepth = null;	//not s
 		
 		rotationAutoUpdate = true;
 		
@@ -183,35 +191,40 @@ class Object3D
 		if (object.parent != null) object.parent.remove(object);
 		
 		object.parent = this;
-		
+		//dispatch event (type 'added')
 		if (children.exists(object) == false) children.set(object, object);
-		
+
+		// add to scene
+		//find trunk of treee
 		var scene = this;
-		while (scene.parent != null) scene = scene.parent;
-		
-		if (Std.is(scene, Scene) == false) return;
-		cast(scene, Scene).__addObject(object);
+		while ( scene.parent != null ) 
+			scene = scene.parent;
+		//if scene, add
+		if ( scene != null && Std.is(scene, Scene) )
+			cast(scene, Scene).__addObject( object );
 	}
 	
 	
-	public function remove (object:Object3D) : Bool
+	public function remove (object:Object3D) : Void
 	{
-		if (children.exists(object) == false) return false;
+		if (children.exists(object) == false)
 		
 		object.parent = null;
+		//dispatch event (type 'removed')
 		children.remove(object);
-		
+
+		// add to scene
+		//find trunk of treee
 		var scene = this;
-		while (scene.parent != null) scene = scene.parent;
-		
-		if (Std.is(scene, Scene) == false) return true;
-		
-		cast(scene, Scene).__removeObject(object);
-		return true;
+		while ( scene.parent != null ) 
+			scene = scene.parent;
+		//if scene, add
+		if ( scene != null && Std.is(scene, Scene) )
+			cast(scene, Scene).__removeObject( object );
 	}
 	
 	
-	public function traverse (fnCallback:Dynamic)
+	public function traverse (fnCallback:Object3D->Void)
 	{
 		fnCallback(this);
 		var cIter = children.iterator();
@@ -328,7 +341,8 @@ class Object3D
 		
 		object.frustumCulled = frustumCulled;
 		
-		object.userData = Json.parse(Json.stringify(userData));
+		//not
+		object.userData = userData;
 		
 		var cIter = children.iterator();
 		while (cIter.hasNext() == true)
